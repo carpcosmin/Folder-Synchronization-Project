@@ -1,16 +1,16 @@
-# This is a sample Python script.
+import hashlib
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+# The function below computes MD5 hash of a file which is given as parameter
+def get_file_hash_value(file_path):
 
+    hasher = hashlib.md5()  # creation of MD5 hash object
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+    with open(file_path, "rb") as file:  # opening the file in binary read mode
+        while True:
+            data = file.read(4096)  # reading the data as chunks of 4096 bytes
+            if not data:
+                break
+            hasher.update(data)  # updating the MD5 hasher object with the chunk of data read
 
+    return hasher.hexdigest()  # the function returns the MD5 hash value
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
