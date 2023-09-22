@@ -1,5 +1,42 @@
 import hashlib
 import logging
+import os
+import shutil
+
+
+# The function below handles the synchronization of the folders
+def synchronize_folders(source_folder_path, replica_folder_path):
+    # Creating two arrays which store the hash-value of each file
+    source_folder_files = {}
+    replica_folder_files = {}
+
+    # Populating the array corresponding to the source folder
+    for root, _, files in os.walk(source_folder_path):
+        for file in files:
+            source_file_path = os.path.join(root, file)
+            relative_path = os.path.relpath(source_file_path, source_folder_path)
+            source_folder_files[relative_path] = get_file_hash_value(source_file_path)
+
+    # Populating the array corresponding to the replica folder
+    for root, _, files in os.walk(replica_folder_path):
+        for file in files:
+            replica_file_path = os.path.join(root, file)
+            relative_path = os.path.relpath(replica_file_path, replica_folder_path)
+            replica_folder_files[relative_path] = get_file_hash_value(replica_file_path)
+
+    # Copying new and modified files from the source folder to the replica folder
+    for rel_path, source_hash in source_folder_files.items():
+        replica_file_path = os.path.join(replica_folder_path, rel_path)
+        if rel_path not in replica_folder_files or source_hash != replica_folder_files[rel_path]:
+            logging.info(f"Copying {rel_path}")
+            shutil.copy2(os.path.join(source_folder_path, rel_path), replica_file_path)
+
+    # Remove files from replica that no longer exist in source
+    for rel_path, _ in replica_folder_files.items():
+        replica_file_path = os.path.join(replica_folder_path, rel_path)
+        if rel_path not in source_folder_files:
+            logging.info(f"Deleting {rel_path}")
+            os.remove(replica_file_path)
 
 
 # The function below configures the logging system
